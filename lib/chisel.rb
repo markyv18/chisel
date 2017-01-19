@@ -8,12 +8,16 @@ class Chisel
     @incoming_text = incoming.split("\n\n")
     markdown.close
     @headers_and_lists_added = []
-    @strong_added = []
-    @emphasis_addded = []
+    @headers_and_lists_ems_strongs_added = []
     @num = (1...100)
+    require "pry"; binding.pry
   end
 
   def header_and_list_converter
+    if @incoming_text.join.include?(":*")
+      unordered_list
+    end
+
      @incoming_text.map do |lines|
        line = lines.split(" ")
        case line[0]
@@ -35,59 +39,46 @@ class Chisel
         when "######"
           line[0].gsub!("######", "<h6>")
           line << "</h6>"
-        # when "*"
-        #   #call the unordered list method
         # when "#{@num}."
-        #   # call the ordered list method
-        # else
-        #   paragraph #call paragraph method
+           # call the ordered list method
+        else
+          line.insert(0, "<p>").insert(-1, "</p>\n")
         end
         @headers_and_lists_added << line.join(" ")
       end
     end
 
-    def strong
-      # working_line = []
-      # strong_line = []
-      @headers_and_lists_added.each do |lines|
-        lines.include? (
+    def strong_em
+      split = @headers_and_lists_added.map do |lines|
+        lines.split(" ")
+      end
 
-        replace with </>
-        then .find and replace first instance with ... <>
-        )
-        require "pry"; binding.pry
-        working_line = lines.split(" ")
-        working_line.each do |line|
-          case
-          when (line[0] == "*") && (line[-1] == "*")
-            line[0].gsub!("*", "<em>")
-            line[-1].gsub!("*","</em>")
-          else
-            line
-          end
-           strong_line << line
+      add_strong_and_em = split.flatten.map do |word|
+        if word.include?("**")
+          word.gsub("**", "<strong>")
+        elsif word.include?("*")
+          word.gsub("*", "<em>")
+        else
+          word
         end
       end
-    end
 
-    # def emphasis
-    #   @strong_added.map do |lines|
-    #
-    # end
+      change_end_tag = add_strong_and_em.map do |word|
+        if word.end_with?("<strong>")
+          word.chomp("<strong>") + "</strong>"
+        elsif word.end_with?("<em>")
+          word.chomp("<em>") + "</em>"
+        else
+          word
+        end
+      end
+      @headers_and_lists_ems_strongs_added << change_end_tag.join(" ")
+   end
 
-
-
-    # def paragraph
-    #   @headers_added.map do |lines_become_ps|
-    #
-    #
-    # end
-
-    # def unordered
-    #   @headers_added.map do |lines|
-    #
-    #
-    # end
+  def unordered_list
+    a = @incoming_text.join
+    if a.include?(":*")
+  end
 
     # def ordered
     #   @headers_added.map do |lines|
@@ -96,11 +87,11 @@ class Chisel
     # end
 
   def output_html
-    html_file = @headers_and_lists_added.join #change as needed per running of methods
-    File.write("my_output.html", html_file)
+    html_file = @headers_and_lists_ems_strongs_added #change as needed per running of methods
+    File.write("my_output.html", html_file[0])
     # File.write(ARGV[1], html_file) add this when ready to use with passed in file names on terminal line run
 
-    p "Converted my_input.markdown (argv0-goes-here-later) (#{@incoming.lines.count} lines) to my_output.html (argv1-goes-here-later) (#{}  working on 'after' counter lines)"
+    # p "Converted my_input.markdown (argv0-goes-here-later) (#{@incoming.lines.count} lines) to my_output.html (argv1-goes-here-later) (#{}  working on 'after' counter lines)"
        #{ARGV[0]} #{ARGV[1]} these go into the p line above
 
       #  p "press enter to open the converted file in a browser tab"
@@ -109,9 +100,7 @@ class Chisel
   end
   def parser
     header_and_list_converter
-    # strong #have to run OL and UL before <em> and <strong>
-    # emphasis
-    require "pry"; binding.pry
+    strong_em
     output_html
   end
 end
