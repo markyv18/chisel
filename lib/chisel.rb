@@ -116,8 +116,8 @@ class Chisel
     html_file = @headers_and_lists_ems_strongs_added
     # File.write("my_output.html", html_file[0])
     File.write(ARGV[1], html_file[0])
-    # p "Converted my_input.markdown (argv0-goes-here-later) (#{@incoming.lines.count} lines) to my_output.html (argv1-goes-here-later) (#{}  working on 'after' counter lines)"
-    # system("open #{ARGV[1]}")
+    p "Converted #{ARGV[0]} (#{@incoming.lines.count} lines) to #{ARGV[1]} (#{} lines)."
+    system("open #{ARGV[1]}")
   end
   def parser
     odd_chars
