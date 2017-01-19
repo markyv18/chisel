@@ -2,8 +2,8 @@ class Chisel
   attr_reader :incoming_text, :incoming
 
   def initialize
-    # markdown = File.open("./lib/my_input.markdown", "r")
-    markdown = File.open(ARGV[0], "r")
+    markdown = File.open("./my_input.markdown", "r")
+    # markdown = File.open(ARGV[0], "r")
     @incoming = markdown.read
     @incoming_text = incoming.split("\n\n")
     markdown.close
@@ -114,10 +114,10 @@ class Chisel
 
   def output_html
     html_file = @headers_and_lists_ems_strongs_added
-    # File.write("my_output.html", html_file[0])
-    File.write(ARGV[1], html_file[0])
-    p "Converted my_input.markdown (argv0-goes-here-later) (#{@incoming.lines.count} lines) to my_output.html (argv1-goes-here-later) (#{}  working on 'after' counter lines)"
-    system("open #{ARGV[1]}")
+    File.write("my_output.html", html_file[0])
+    # File.write(ARGV[1], html_file[0])
+    # p "Converted my_input.markdown (argv0-goes-here-later) (#{@incoming.lines.count} lines) to my_output.html (argv1-goes-here-later) (#{}  working on 'after' counter lines)"
+    # system("open #{ARGV[1]}")
   end
   def parser
     odd_chars
@@ -127,5 +127,5 @@ class Chisel
   end
 end
 
-file = Chisel.new
-file.parser
+# file = Chisel.new
+# file.parser
