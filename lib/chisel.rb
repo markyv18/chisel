@@ -2,22 +2,26 @@ class Chisel
   attr_reader :incoming_text, :incoming
 
   def initialize
-    markdown = File.open("./lib/my_input.markdown", "r")
-    # markdown = File.open("", "r")  ARGV[0]
+    # markdown = File.open("./lib/my_input.markdown", "r")
+    markdown = File.open(ARGV[0], "r")
     @incoming = markdown.read
     @incoming_text = incoming.split("\n\n")
     markdown.close
     @headers_and_lists_added = []
     @headers_and_lists_ems_strongs_added = []
-    @num = (1...100)
-    require "pry"; binding.pry
+  end
+
+  def odd_chars
+    @incoming_text.map do |line|
+      if line.include?("&")
+        line.gsub!("&", "&amp;")
+      else
+        line
+      end
+    end
   end
 
   def header_and_list_converter
-    if @incoming_text.join.include?(":*")
-      unordered_list
-    end
-
      @incoming_text.map do |lines|
        line = lines.split(" ")
        case line[0]
@@ -39,20 +43,54 @@ class Chisel
         when "######"
           line[0].gsub!("######", "<h6>")
           line << "</h6>"
-        # when "#{@num}."
-           # call the ordered list method
+        when "1." || "2." || "3." || "4."
+          ordered_list(line)
+        when "*"
+          unordered_list(line)
         else
-          line.insert(0, "<p>").insert(-1, "</p>\n")
+          paragraph(line)
         end
         @headers_and_lists_added << line.join(" ")
       end
+    end
+
+    def paragraph(line)
+      line.insert(0, "<p>").insert(-1, "</p>\n")
+    end
+
+    def unordered_list(line)
+      line.map do |word|
+        if word == "*"
+          word.gsub!("*", "<li>")
+        else
+           word << "</li>"
+        end
+      end
+      line.unshift("<ul>")
+      line.push("</ul>")
+    end
+
+    def ordered_list(line)
+      line.map do |word|
+        if word == "1."
+          word.gsub!("1.", "<li>")
+        elsif word == "2."
+          word.gsub!("2.", "<li>")
+        elsif word == "3."
+          word.gsub!("3.", "<li>")
+        else
+          word << "</li>"
+        end
+        # require "pry"; binding.pry
+      end
+      line.unshift("<ol>")
+      line.push("</ol>")
     end
 
     def strong_em
       split = @headers_and_lists_added.map do |lines|
         lines.split(" ")
       end
-
       add_strong_and_em = split.flatten.map do |word|
         if word.include?("**")
           word.gsub("**", "<strong>")
@@ -62,7 +100,6 @@ class Chisel
           word
         end
       end
-
       change_end_tag = add_strong_and_em.map do |word|
         if word.end_with?("<strong>")
           word.chomp("<strong>") + "</strong>"
@@ -75,30 +112,15 @@ class Chisel
       @headers_and_lists_ems_strongs_added << change_end_tag.join(" ")
    end
 
-  def unordered_list
-    a = @incoming_text.join
-    if a.include?(":*")
-  end
-
-    # def ordered
-    #   @headers_added.map do |lines|
-    #
-    #
-    # end
-
   def output_html
-    html_file = @headers_and_lists_ems_strongs_added #change as needed per running of methods
-    File.write("my_output.html", html_file[0])
-    # File.write(ARGV[1], html_file) add this when ready to use with passed in file names on terminal line run
-
-    # p "Converted my_input.markdown (argv0-goes-here-later) (#{@incoming.lines.count} lines) to my_output.html (argv1-goes-here-later) (#{}  working on 'after' counter lines)"
-       #{ARGV[0]} #{ARGV[1]} these go into the p line above
-
-      #  p "press enter to open the converted file in a browser tab"
-      #  gets.chomp
-      # system("open my_output.html") these three lines prompt user to see the converted file in a browser tab
+    html_file = @headers_and_lists_ems_strongs_added
+    # File.write("my_output.html", html_file[0])
+    File.write(ARGV[1], html_file[0])
+    p "Converted my_input.markdown (argv0-goes-here-later) (#{@incoming.lines.count} lines) to my_output.html (argv1-goes-here-later) (#{}  working on 'after' counter lines)"
+    system("open #{ARGV[1]}")
   end
   def parser
+    odd_chars
     header_and_list_converter
     strong_em
     output_html
